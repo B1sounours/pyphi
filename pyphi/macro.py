@@ -30,6 +30,10 @@ _partition_lists = [
 ]
 
 
+class ConditionallyDependentError(ValueError):
+    pass
+
+
 class MacroSubsystem(Subsystem):
     """A subclass of |Subsystem| implementing macro computations."""
 
@@ -44,9 +48,6 @@ class MacroSubsystem(Subsystem):
         self._hidden_indices = hidden_indices
         self._output_grouping = output_grouping
         self._state_grouping = state_grouping
-
-        # Is the Macro system conditionally independent?
-        self.independent = True
 
         # Indices internal to the micro subsystem
         self.internal_indices = node_indices
@@ -120,11 +121,8 @@ class MacroSubsystem(Subsystem):
             self.output_grouping = ()
             self.mapping = None
 
-        if self.independent:
-            self.nodes = tuple(Node(self, i, indices=self.node_indices)
-                               for i in self.node_indices)
-        else:
-            self.nodes = ()
+        self.nodes = tuple(Node(self, i, indices=self.node_indices)
+                           for i in self.node_indices)
 
         # Hash the final subsystem - only compute hash once.
         self._hash = hash((self.network,
@@ -191,7 +189,8 @@ class MacroSubsystem(Subsystem):
         # Coarse-grain the remaining nodes into the appropriate groups
         self.tpm = make_macro_tpm(self.tpm, mapping)
         if not self.is_cut():
-            self.independent = validate.conditionally_independent(self.tpm)
+            if not validate.conditionally_independent(self.tpm):
+                raise ConditionallyDependentError
         self.tpm = convert.state_by_state2state_by_node(self.tpm)
 
         # Universal connectivity, for now.
@@ -416,9 +415,12 @@ def coarse_grain(network, state, internal_indices):
     for partition in partitions:
         groupings = list_all_groupings(partition)
         for grouping in groupings:
-            subsystem = MacroSubsystem(network, state, internal_indices,
-                                       output_grouping=partition,
-                                       state_grouping=grouping)
+            try:
+                subsystem = MacroSubsystem(network, state, internal_indices,
+                                           output_grouping=partition,
+                                           state_grouping=grouping)
+            except ConditionallyDependentError:
+                continue
             phi = compute.big_phi(subsystem)
             if (phi - max_phi) > constants.EPSILON:
                 max_phi = phi
@@ -472,9 +474,12 @@ def phi_by_grain(network, state):
         for partition in partitions:
             groupings = list_all_groupings(partition)
             for grouping in groupings:
-                subsystem = MacroSubsystem(network, state, system,
-                                           output_grouping=partition,
-                                           state_grouping=grouping)
+                try:
+                    subsystem = MacroSubsystem(network, state, system,
+                                               output_grouping=partition,
+                                               state_grouping=grouping)
+                except ConditionallyDependentError:
+                    continue
                 phi = compute.big_phi(subsystem)
                 list_of_phi.append([len(subsystem), phi, system,
                                     partition, grouping])
