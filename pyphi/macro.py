@@ -34,6 +34,11 @@ class ConditionallyDependentError(ValueError):
     pass
 
 
+def reindex(indices):
+    """Generate a new set of node indices, the size of indices."""
+    return tuple(range(len(indices)))
+
+
 class MacroSubsystem(Subsystem):
     """A subclass of |Subsystem| implementing macro computations."""
 
@@ -53,7 +58,7 @@ class MacroSubsystem(Subsystem):
         self.internal_indices = node_indices
 
         # Re-index the subsystem nodes with the external nodes removed
-        self.micro_indices = tuple(range(len(self.internal_indices)))
+        self.micro_indices = reindex(self.internal_indices)
 
         # A variable to tell if a system is a pure micro without blackboxing or
         # coarse-grain.
@@ -101,7 +106,7 @@ class MacroSubsystem(Subsystem):
 
         self._blackbox_space(self.hidden_indices, self.output_indices)
         # Normalize indices to size of new TPM
-        self.node_indices = tuple(range(len(self.output_indices)))
+        self.node_indices = reindex(self.output_indices)
 
         # Coarse-grain in space
         # =====================
@@ -113,7 +118,7 @@ class MacroSubsystem(Subsystem):
                       self.internal_indices[self.output_indices[i]] in group)
                 for group in output_grouping)
             self.mapping = make_mapping(self.output_grouping, state_grouping)
-            self.node_indices = tuple(range(len(self.output_grouping)))
+            self.node_indices = reindex(self.output_grouping)
 
             self._coarsegrain_space(self.output_grouping, state_grouping,
                                     self.mapping)
@@ -169,6 +174,7 @@ class MacroSubsystem(Subsystem):
         if not hidden_indices:
             return
 
+        # TODO: validate conditional independence?
         self.tpm = utils.condition_tpm(self.tpm, hidden_indices,
                                        self.proper_state)
         self.tpm = np.squeeze(self.tpm)
