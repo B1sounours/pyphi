@@ -8,7 +8,7 @@ import itertools
 
 import numpy as np
 
-from . import cache, convert, utils, validate
+from . import cache, utils, validate
 from .config import PRECISION
 from .constants import DIRECTIONS, FUTURE, PAST
 from .jsonify import jsonify
@@ -549,7 +549,6 @@ class Subsystem:
                 direction.
         """
         repertoire = self._get_repertoire(direction)
-
 
         # We default to the null MIP (the MIP of a reducible mechanism)
         mip = _null_mip(direction, mechanism, purview)
