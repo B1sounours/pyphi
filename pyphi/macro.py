@@ -431,7 +431,7 @@ def all_groupings(partition):
 
     TODO: document exactly how to interpret the grouping.
     """
-    if not all([len(part) > 0 for part in partition]):
+    if not all(len(part) > 0 for part in partition):
         raise ValueError('Each part of the partition must have at least one '
                          'element.')
 
