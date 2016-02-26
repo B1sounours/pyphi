@@ -549,12 +549,12 @@ class MacroNetwork:
         coarse_grain (CoarseGrain): The coarse-graining of micro-elements into
             macro-elements.
         time_scale (int): The time scale the macro-network run over.
-        hidden_indices (tuple(int)): Indices which are hidden by blackboxing.
+        blackbox (Blackbox): The blackboxing of micro elements in the network.
         emergence (float): The difference between the |big_phi| of the macro-
             and the micro-system.
     """
     def __init__(self, network, system, macro_phi, micro_phi, coarse_grain,
-                 time_scale=1, hidden_indices=None):
+                 time_scale=1, blackbox=None):
 
         self.network = network
         self.system = system
@@ -562,7 +562,7 @@ class MacroNetwork:
         self.micro_phi = micro_phi
         self.time_scale = time_scale
         self.coarse_grain = coarse_grain
-        self.hidden_indices = hidden_indices
+        self.blackbox = blackbox
 
     def __str__(self):
         return "MacroNetwork(phi={0}, emergence={1})".format(
@@ -681,7 +681,7 @@ def blackbox_emergence(network, state, time_scales=None):
                             micro_phi=micro_phi,
                             system=system,
                             time_scale=time_scale,
-                            hidden_indices=blackbox.hidden_indices,
+                            blackbox=blackbox,
                             coarse_grain=coarse_grain)
 
     return max_network
