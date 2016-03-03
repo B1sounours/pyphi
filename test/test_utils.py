@@ -265,3 +265,18 @@ def test_strongly_connected():
                    [1, 0, 0],
                    [0, 0, 0]])
     assert utils.strongly_connected(cm, (0, 1))
+
+
+def test_all_states():
+    assert list(utils.all_states(0)) == []
+    assert list(utils.all_states(1)) == [(0,), (1,)]
+    assert list(utils.all_states(3)) == [
+        (0, 0, 0),
+        (1, 0, 0),
+        (0, 1, 0),
+        (1, 1, 0),
+        (0, 0, 1),
+        (1, 0, 1),
+        (0, 1, 1),
+        (1, 1, 1),
+    ]
