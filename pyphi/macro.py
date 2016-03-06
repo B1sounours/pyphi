@@ -413,6 +413,7 @@ class Blackbox(namedtuple('Blackbox', ['partition', 'output_indices'])):
         output_indices (tuple(int)): Outputs of the blackboxes.
     """
     # TODO: validate!
+    # TODO: validate that output indices are ordered?
 
     @property
     def hidden_indices(self):
